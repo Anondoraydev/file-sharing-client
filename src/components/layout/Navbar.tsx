@@ -1,142 +1,111 @@
-import { Button } from "../ui/button"
-import {
-  Upload,
-  Home,
-  FolderOpen,
-  Settings,
-  User,
-  LogOut,
-  LogIn,
-} from "lucide-react"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "../ui/dropdown-menu"
-import { Avatar, AvatarFallback } from "../ui/avatar"
-import Logo from "@/assets/icons/Logo"
-import { ModeToggle } from "./ModeToggler"
 
-export function Navbar() {
+import { useState } from "react";
+import Logo from "@/assets/icons/Logo";
+import { Button } from "@/components/ui/button";
+import {
+  NavigationMenu,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+} from "@/components/ui/navigation-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
+const navigationLinks = [
+  { href: "#", label: "Home" },
+  { href: "#features", label: "Features" },
+  { href: "#pricing", label: "Pricing" },
+  { href: "#about", label: "About" },
+];
+
+export default function Navbar() {
+  const [activeLink, setActiveLink] = useState("Home");
+
   return (
-    <nav className="bg-background border-b border-border sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <div className="flex items-center gap-3 w-12 md:mr-50">
+    <header className="border-b">
+      <div className=" max-w-7xl mx-auto relative flex h-16 items-center px-4">
+        {/* Logo */}
+        <div className="flex items-center">
+          <a href="#" className="text-primary hover:text-primary/90">
             <Logo />
-          </div>
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-6">
-            <button className="flex items-center gap-2 px-3 py-2 rounded-lg text-primary hover:bg-accent hover:text-accent-foreground font-medium">
-              <Home className="w-4 h-4" />
-              Home
-            </button>
-
-            <button className="flex items-center gap-2 px-3 py-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground">
-              <FolderOpen className="w-4 h-4" />
-              My Files
-            </button>
-
-            <button className="flex items-center gap-2 px-3 py-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground">
-              <Settings className="w-4 h-4" />
-              Settings
-            </button>
-          </div>
-
-          {/* Right actions */}
-          <div className="flex items-center gap-3">
-            <button className="relative p-2 rounded-lg hover:bg-accent">
-              <ModeToggle />
-            </button>
-
-            <Button className="hidden sm:flex bg-primary text-primary-foreground hover:bg-primary/90">
-              <Upload className="w-4 h-4 mr-2" />
-              Upload
-            </Button>
-
-            {/* User Menu */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-accent">
-                  <Avatar className="w-8 h-8">
-                    <AvatarFallback className="bg-primary text-primary-foreground text-sm">
-                      U
-                    </AvatarFallback>
-                  </Avatar>
-                </button>
-              </DropdownMenuTrigger>
-
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-
-                <DropdownMenuItem className="text-foreground hover:bg-accent">
-                  <User className="w-4 h-4 mr-2" />
-                  Profile
-                </DropdownMenuItem>
-
-                <DropdownMenuItem className="text-foreground hover:bg-accent">
-                  <Settings className="w-4 h-4 mr-2" />
-                  Settings
-                </DropdownMenuItem>
-
-                <DropdownMenuSeparator />
-
-                <DropdownMenuItem className="text-destructive focus:text-destructive">
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Logout
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            <Button
-              variant="outline"
-              className="hidden sm:flex border-primary text-primary hover:bg-accent"
-            >
-              <LogIn className="w-4 h-4 mr-2" />
-              Login
-            </Button>
-          </div>
+          </a>
         </div>
 
-        {/* Mobile Menu */}
-        <div className="md:hidden py-4 border-t border-border">
-          <div className="space-y-2">
-            <button className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-primary hover:bg-accent font-medium">
-              <Home className="w-4 h-4" />
-              Home
-            </button>
+        {/* Desktop Navigation - Centered */}
+        <nav className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 max-md:hidden">
+          <NavigationMenu>
+            <NavigationMenuList className="flex gap-6">
+              {navigationLinks.map((link) => (
+                <NavigationMenuItem key={link.label}>
+                  <NavigationMenuLink
+                    active={activeLink === link.label}
+                    className="py-1.5 font-medium text-muted-foreground hover:text-primary"
+                    href={link.href}
+                    onClick={() => setActiveLink(link.label)}
+                  >
+                    {link.label}
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+              ))}
+            </NavigationMenuList>
+          </NavigationMenu>
+        </nav>
 
-            <button className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-muted-foreground hover:bg-accent">
-              <FolderOpen className="w-4 h-4" />
-              My Files
-            </button>
+        {/* Right side Buttons */}
+        <div className="ml-auto flex items-center gap-2">
+          <Button asChild className="text-sm" size="sm" variant="ghost">
+            <a href="#">Sign In</a>
+          </Button>
+          <Button asChild className="text-sm" size="sm">
+            <a href="#">Get Started</a>
+          </Button>
 
-            <button className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-muted-foreground hover:bg-accent">
-              <Settings className="w-4 h-4" />
-              Settings
-            </button>
-
-            <Button
-              variant="outline"
-              className="w-full border-primary text-primary hover:bg-accent"
-            >
-              <LogIn className="w-4 h-4 mr-2" />
-              Login / Register
-            </Button>
-
-            <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
-              <Upload className="w-4 h-4 mr-2" />
-              Upload Files
-            </Button>
-          </div>
+          {/* Mobile Hamburger */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                className="group size-8 md:hidden ml-2"
+                size="icon"
+                variant="ghost"
+              >
+                <svg
+                  className="pointer-events-none"
+                  fill="none"
+                  height={16}
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  width={16}
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path d="M4 6H20" />
+                  <path d="M4 12H20" />
+                  <path d="M4 18H20" />
+                </svg>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="start" className="w-36 p-1 md:hidden">
+              <NavigationMenu className="max-w-none *:w-full">
+                <NavigationMenuList className="flex-col items-start gap-2">
+                  {navigationLinks.map((link) => (
+                    <NavigationMenuItem className="w-full" key={link.label}>
+                      <NavigationMenuLink
+                        active={activeLink === link.label}
+                        className="py-1.5"
+                        href={link.href}
+                        onClick={() => setActiveLink(link.label)}
+                      >
+                        {link.label}
+                      </NavigationMenuLink>
+                    </NavigationMenuItem>
+                  ))}
+                </NavigationMenuList>
+              </NavigationMenu>
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
-    </nav>
-  )
+    </header>
+  );
 }
