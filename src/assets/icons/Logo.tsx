@@ -1,7 +1,7 @@
 export default function Logo() {
     return (
         <div>
-            <svg width="100%" height="100%" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg width="12%" height="12%" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M16.6584 40H15.3817C12.0653 40 10.07 39.9994 8.54581 39.7159L17.3668 28.0344L16.6584 40Z" fill="#FF1616" data-darkreader-inline-fill="" className="--darkreader-inline-fill: var(--darkreader-text-ff1616, #ff0000);"></path>
                 <path d="M31.2482 39.7514C29.7502 39.9988 27.7875 40 24.6183 40H23.109L22.397 28.0309L31.2482 39.7514Z" fill="#FF1616" data-darkreader-inline-fill="" className="--darkreader-inline-fill: var(--darkreader-text-ff1616, #ff0000);"></path>
                 <path d="M39.6715 31.6708C39.6071 31.9773 39.5313 32.2655 39.4389 32.5426C38.8337 34.3567 37.7712 35.9522 36.3867 37.1982L26.44 26.044L39.6715 31.6708Z" fill="#FF1616" data-darkreader-inline-fill="" className="--darkreader-inline-fill: var(--darkreader-text-ff1616, #ff0000);"></path>
