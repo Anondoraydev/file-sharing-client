@@ -9,12 +9,11 @@ import {
   NavigationMenuList,
 } from "@/components/ui/navigation-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ModeToggle } from "./ModeToggler";
 
 const navigationLinks = [
-  { href: "#", label: "Home" },
-  { href: "#features", label: "Features" },
-  { href: "#pricing", label: "Pricing" },
-  { href: "#about", label: "About" },
+  { href: "/", label: "Home" },
+  { href: "/about", label: "About" },
 ];
 
 export default function Navbar() {
@@ -52,6 +51,9 @@ export default function Navbar() {
 
         {/* Right side Buttons */}
         <div className="ml-auto flex items-center gap-2">
+          <Button asChild className="text-sm" size="sm" variant="ghost">
+            <ModeToggle />
+          </Button>
           <Button asChild className="text-sm" size="sm" variant="ghost">
             <a href="#">Sign In</a>
           </Button>
