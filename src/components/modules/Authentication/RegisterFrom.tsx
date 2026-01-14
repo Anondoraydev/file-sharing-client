@@ -23,6 +23,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRegisterMutation } from "@/redux/features/auth/auth.api";
 import { toast } from "sonner";
+import { useNavigate } from "react-router";
 
 
 const registerSchema = z.object({
@@ -47,6 +48,7 @@ export function RegisterForm({
 }: React.ComponentProps<"div">) {
 
   const [register] = useRegisterMutation();
+  const navigate = useNavigate();
 
 
   const form = useForm({
@@ -69,6 +71,7 @@ export function RegisterForm({
       const result = await register(userInfo).unwrap();
       console.log("Registration successful:", result);
       toast.success("Registration successful");
+      navigate("/login");
     } catch (error) {
       console.error("Registration failed:", error);
     }
@@ -154,6 +157,7 @@ export function RegisterForm({
               />
               <Button type="submit" className="w-full">Submit</Button>
             </form>
+            <h2 className="text-center mt-3">Already have an account?<a href="/login" className="text-indigo-600"> Sign up</a></h2>
           </Form>
         </CardContent>
       </Card>

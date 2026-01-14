@@ -1,70 +1,115 @@
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
     Card,
     CardContent,
     CardDescription,
     CardHeader,
     CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
+import { FieldDescription } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { useForm, type FieldValues, type SubmitHandler } from "react-hook-form";
 import {
-    Field,
-    FieldDescription,
-    FieldGroup,
-    FieldLabel,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+    Form,
+    FormControl,
+    FormDescription,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from "@/components/ui/form";
+import { useLoginMutation } from "@/redux/features/auth/auth.api";
+import { toast } from "sonner";
+import { useNavigate } from "react-router";
 
 export function LoginForm({
     className,
     ...props
-}: React.ComponentProps<"div">) {
+}: React.HTMLAttributes<HTMLDivElement>) {
+    const navigate = useNavigate();
+
+    const form = useForm();
+    const [login] = useLoginMutation();
+
+    const onSubmit: SubmitHandler<FieldValues> = async (data) => {
+        try {
+            const res = await login(data).unwrap();
+            toast.success("Login successful");
+            navigate("/", { replace: true });
+        } catch (error: unknown) {
+            if (typeof error === "object" && error !== null && "status" in error) {
+                const e = error as { status?: number };
+                if (e.status === 401) {
+                    toast.error("Your account is not verified. Please verify your account.");
+                    navigate("/verify", { state: data.email });
+                    return;
+                }
+            }
+            toast.error("Login failed. Please check your credentials.");
+            console.error(error);
+        }
+    };
+
+
     return (
         <div className={cn("flex flex-col gap-6", className)} {...props}>
-            <Card className="w-full md:w-1/3 md:mt-30 md:mx-auto">
-                <CardHeader>
-                    <CardTitle>Login to your account</CardTitle>
+            <Card className="w-full md:w-1/3 md:mt-24 md:mx-auto">
+                <CardHeader className="text-center">
+                    <CardTitle className="text-xl">Login to your account</CardTitle>
                     <CardDescription>
-                        Enter your email below to login to your account
+                        Enter your email below to login
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <form>
-                        <FieldGroup>
-                            <Field>
-                                <FieldLabel htmlFor="email">Email</FieldLabel>
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    placeholder="m@example.com"
-                                    required
-                                />
-                            </Field>
-                            <Field>
-                                <div className="flex items-center">
-                                    <FieldLabel htmlFor="password">Password</FieldLabel>
-                                    <a
-                                        href="#"
-                                        className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                                    >
-                                        Forgot your password?
-                                    </a>
-                                </div>
-                                <Input id="password" type="password" required />
-                            </Field>
-                            <Field>
-                                <Button type="submit">Login</Button>
-                                <Button variant="outline" type="button">
-                                    Login with Google
-                                </Button>
-                                <FieldDescription className="text-center">
-                                    Don&apos;t have an account? <a href="#">Sign up</a>
-                                </FieldDescription>
-                            </Field>
-                        </FieldGroup>
-                    </form>
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                            <FormField
+                                control={form.control}
+                                name="email"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Email</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="exam@example.com" type="email" {...field} />
+                                        </FormControl>
+                                        <FormDescription className="sr-only">
+                                            This is your email address
+                                        </FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="password"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Password</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="********" type="password" {...field} />
+                                        </FormControl>
+                                        <FormDescription className="sr-only">
+                                            Password must be at least 6 characters
+                                        </FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <Button type="submit" className="w-full">Submit</Button>
+                        </form>
+                        <h2 className="text-center mt-3">
+                            Don't have an account? <a href="/register" className="text-indigo-600">Register</a>
+                        </h2>
+                    </Form>
                 </CardContent>
             </Card>
+            <FieldDescription className="px-6 text-center">
+                By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
+                and <a href="#">Privacy Policy</a>.
+            </FieldDescription>
         </div>
-    )
+    );
 }
