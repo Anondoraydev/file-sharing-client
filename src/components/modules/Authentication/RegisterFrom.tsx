@@ -21,10 +21,12 @@ import {
 } from "@/components/ui/form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRegisterMutation } from "@/redux/features/auth/auth.api";
+import { toast } from "sonner";
 
 
 const registerSchema = z.object({
-  name: z.string().min(2, {
+  displayName: z.string().min(2, {
     error: "Name is to short"
   }).max(50),
   email: z.email({ error: "Invalid email address" }),
@@ -43,18 +45,34 @@ export function RegisterForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+
+  const [register] = useRegisterMutation();
+
+
   const form = useForm({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      name: "",
+      displayName: "",
       email: "",
       password: "",
       confirmPassword: "",
     }
   });
 
-  const onSubmit: SubmitHandler<FieldValues> = (data) => {
-    console.log(data);
+  const onSubmit: SubmitHandler<FieldValues> = async (data) => {
+    const userInfo = {
+      displayName: data.displayName,
+      email: data.email,
+      password: data.password,
+    }
+    try {
+      const result = await register(userInfo).unwrap();
+      console.log("Registration successful:", result);
+      toast.success("Registration successful");
+    } catch (error) {
+      console.error("Registration failed:", error);
+    }
+
   };
 
   return (
@@ -72,7 +90,7 @@ export function RegisterForm({
 
               <FormField
                 control={form.control}
-                name="name"
+                name="displayName"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Username</FormLabel>
