@@ -23,18 +23,33 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 
-const formSchema = z.object({
-  name: z.string().min(2).max(50),
-})
+const registerSchema = z.object({
+  name: z.string().min(2, {
+    error: "Name is to short"
+  }).max(50),
+  email: z.email({ error: "Invalid email address" }),
+  password: z.string().min(6, {
+    error: "Password must be at least 6 characters"
+  }),
+  confirmPassword: z.string().min(6, {
+    error: "Confirm Password must be at least 6 characters"
+  }),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+});
 
 export function RegisterForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
   const form = useForm({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(registerSchema),
     defaultValues: {
       name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
     }
   });
 
@@ -53,7 +68,8 @@ export function RegisterForm({
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+
               <FormField
                 control={form.control}
                 name="name"
@@ -61,7 +77,7 @@ export function RegisterForm({
                   <FormItem>
                     <FormLabel>Username</FormLabel>
                     <FormControl>
-                      <Input placeholder="shadcn" {...field} />
+                      <Input placeholder="Anondo Ray" {...field} />
                     </FormControl>
                     <FormDescription className="sr-only">
                       This is your public display name.
@@ -70,7 +86,55 @@ export function RegisterForm({
                   </FormItem>
                 )}
               />
-              <Button type="submit">Submit</Button>
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input placeholder="exam@example.com" type="email" {...field} />
+                    </FormControl>
+                    <FormDescription className="sr-only">
+                      This is your email address
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input placeholder="********" type="password" {...field} />
+                    </FormControl>
+                    <FormDescription className="sr-only">
+                      Password must be at least 6 characters
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm Password </FormLabel>
+                    <FormControl>
+                      <Input placeholder="********" type="password" {...field} />
+                    </FormControl>
+                    <FormDescription className="sr-only">
+                      Password does not match
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit" className="w-full">Submit</Button>
             </form>
           </Form>
         </CardContent>
