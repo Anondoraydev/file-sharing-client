@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,9 +24,6 @@ import { useLoginMutation } from "@/redux/features/auth/auth.api";
 import { toast } from "sonner";
 import { useNavigate } from "react-router";
 
-
-
-
 export function LoginForm({
     className,
     ...props
@@ -36,23 +34,24 @@ export function LoginForm({
     const [login] = useLoginMutation();
 
     const onSubmit: SubmitHandler<FieldValues> = async (data) => {
-        console.log(data)
         try {
             const res = await login(data).unwrap();
-            console.log("Login successful:", res);
             toast.success("Login successful");
-            // Redirect or perform other actions after successful login
-
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (error: any) {
-            console.error("Login failed:", error);
-            if (error.status === 401) {
-                toast.error("Your Account is not verified. Please verify your account.");
-                navigate("/verify", { state: data.email });
+            navigate("/", { replace: true });
+        } catch (error: unknown) {
+            if (typeof error === "object" && error !== null && "status" in error) {
+                const e = error as { status?: number };
+                if (e.status === 401) {
+                    toast.error("Your account is not verified. Please verify your account.");
+                    navigate("/verify", { state: data.email });
+                    return;
+                }
             }
+            toast.error("Login failed. Please check your credentials.");
+            console.error(error);
         }
-
     };
+
 
     return (
         <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -66,7 +65,6 @@ export function LoginForm({
                 <CardContent>
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-
                             <FormField
                                 control={form.control}
                                 name="email"
@@ -102,7 +100,9 @@ export function LoginForm({
 
                             <Button type="submit" className="w-full">Submit</Button>
                         </form>
-                        <h2 className="text-center mt-3">Don't have an account? <a href="/register" className="text-indigo-600">Register</a></h2>
+                        <h2 className="text-center mt-3">
+                            Don't have an account? <a href="/register" className="text-indigo-600">Register</a>
+                        </h2>
                     </Form>
                 </CardContent>
             </Card>
