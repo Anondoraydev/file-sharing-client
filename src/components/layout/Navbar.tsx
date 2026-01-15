@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/navigation-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ModeToggle } from "./ModeToggler";
+import { Link } from "react-router";
+import { useUserInfoQuery } from "@/redux/features/auth/auth.api";
 
 const navigationLinks = [
   { href: "/", label: "Home" },
@@ -17,6 +19,10 @@ const navigationLinks = [
 ];
 
 export default function Navbar() {
+
+  const { data } = useUserInfoQuery(undefined);
+  const email = data?.data?.email;
+
   const [activeLink, setActiveLink] = useState("Home");
 
   return (
@@ -51,15 +57,26 @@ export default function Navbar() {
 
         {/* Right side Buttons */}
         <div className="ml-auto flex items-center gap-2">
-          <Button asChild className="text-sm" size="sm" variant="ghost">
-            <ModeToggle />
-          </Button>
-          <Button asChild className="text-sm" size="sm" variant="ghost">
-            <a href="#">Sign In</a>
-          </Button>
-          <Button asChild className="text-sm" size="sm">
-            <a href="#">Get Started</a>
-          </Button>
+
+          <ModeToggle />
+
+          {email ? (
+            <Button
+              className="text-sm"
+              size="sm"
+              variant="destructive"
+
+            >
+              Logout
+            </Button>
+          ) : (
+            <Button asChild className="text-sm" size="sm">
+              <Link to="/login">Login</Link>
+            </Button>
+          )}
+          {/* <Button asChild className="text-sm" size="sm">
+            <Link to="/signup">Get Started</Link>
+          </Button> */}
 
           {/* Mobile Hamburger */}
           <Popover>
