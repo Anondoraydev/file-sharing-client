@@ -31,9 +31,18 @@ const registerSchema = z.object({
     error: "Name is to short"
   }).max(50),
   email: z.email({ error: "Invalid email address" }),
-  password: z.string().min(6, {
-    error: "Password must be at least 6 characters"
-  }),
+  password: z
+    .string()
+    .min(6, { message: "Password must be at least 6 characters" })
+    .refine((v) => /[A-Z]/.test(v), {
+      message: "Password must contain at least one uppercase letter",
+    })
+    .refine((v) => /[0-9]/.test(v), {
+      message: "Password must contain at least one number",
+    })
+    .refine((v) => /[^A-Za-z0-9]/.test(v), {
+      message: "Password must contain at least one symbol",
+    }),
   confirmPassword: z.string().min(6, {
     error: "Confirm Password must be at least 6 characters"
   }),
