@@ -10,6 +10,9 @@ import {
 } from "@/components/ui/navigation-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ModeToggle } from "./ModeToggler";
+import { Link } from "react-router";
+import { authApi, useLogoutMutation, useUserInfoQuery } from "@/redux/features/auth/auth.api";
+import { useAppDispatch } from "@/redux/hook";
 
 const navigationLinks = [
   { href: "/", label: "Home" },
@@ -17,6 +20,20 @@ const navigationLinks = [
 ];
 
 export default function Navbar() {
+
+  const { data } = useUserInfoQuery(undefined);
+  const [logout] = useLogoutMutation();
+  const dispatch = useAppDispatch();
+
+  const email = data?.data?.email;
+
+  const handleLogout = () => {
+    logout(undefined);
+    dispatch(authApi.util.resetApiState());
+  };
+
+
+
   const [activeLink, setActiveLink] = useState("Home");
 
   return (
@@ -51,15 +68,27 @@ export default function Navbar() {
 
         {/* Right side Buttons */}
         <div className="ml-auto flex items-center gap-2">
-          <Button asChild className="text-sm" size="sm" variant="ghost">
-            <ModeToggle />
-          </Button>
-          <Button asChild className="text-sm" size="sm" variant="ghost">
-            <a href="#">Sign In</a>
-          </Button>
-          <Button asChild className="text-sm" size="sm">
-            <a href="#">Get Started</a>
-          </Button>
+
+          <ModeToggle />
+
+          {email ? (
+            <Button
+              onClick={handleLogout}
+              className="text-sm"
+              size="sm"
+              variant="destructive"
+
+            >
+              Logout
+            </Button>
+          ) : (
+            <Button asChild className="text-sm" size="sm">
+              <Link to="/login">Login</Link>
+            </Button>
+          )}
+          {/* <Button asChild className="text-sm" size="sm">
+            <Link to="/signup">Get Started</Link>
+          </Button> */}
 
           {/* Mobile Hamburger */}
           <Popover>

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { FieldDescription } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { useForm, type FieldValues, type SubmitHandler } from "react-hook-form";
+import { useForm, type SubmitHandler } from "react-hook-form";
 import {
     Form,
     FormControl,
@@ -23,6 +23,12 @@ import {
 import { useLoginMutation } from "@/redux/features/auth/auth.api";
 import { toast } from "sonner";
 import { useNavigate } from "react-router";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+
+type LoginFormValues = {
+    email: string;
+    password: string;
+};
 
 export function LoginForm({
     className,
@@ -30,28 +36,48 @@ export function LoginForm({
 }: React.HTMLAttributes<HTMLDivElement>) {
     const navigate = useNavigate();
 
-    const form = useForm();
-    const [login] = useLoginMutation();
+    const form = useForm<LoginFormValues>({
+        defaultValues: {
+            email: "",
+            password: "",
+        },
+    });
 
-    const onSubmit: SubmitHandler<FieldValues> = async (data) => {
+    const [login, { isLoading }] = useLoginMutation();
+
+    const onSubmit: SubmitHandler<LoginFormValues> = async (data) => {
         try {
-            const res = await login(data).unwrap();
+            await login(data).unwrap();
             toast.success("Login successful");
             navigate("/", { replace: true });
-        } catch (error: unknown) {
-            if (typeof error === "object" && error !== null && "status" in error) {
-                const e = error as { status?: number };
-                if (e.status === 401) {
-                    toast.error("Your account is not verified. Please verify your account.");
-                    navigate("/verify", { state: data.email });
-                    return;
-                }
+        } catch (error) {
+            const err = error as FetchBaseQueryError & {
+                data?: {
+                    message?: string;
+                    code?: string;
+                };
+            };
+
+            //  Account not verified
+            if (err.status === 401) {
+                toast.error("Your account is not verified. Please verify first.");
+                navigate("/verify", { state: data.email });
+                return;
             }
-            toast.error("Login failed. Please check your credentials.");
-            console.error(error);
+
+            //  User not registered
+            if (err.status === 404 || err.data?.code === "USER_NOT_FOUND") {
+                toast.error("Account not found. Please register first.");
+                navigate("/register", {
+                    state: { email: data.email },
+                });
+                return;
+            }
+
+            toast.error(err.data?.message ?? "Login failed. Try again.");
+            console.error("Login error:", error);
         }
     };
-
 
     return (
         <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -59,56 +85,88 @@ export function LoginForm({
                 <CardHeader className="text-center">
                     <CardTitle className="text-xl">Login to your account</CardTitle>
                     <CardDescription>
-                        Enter your email below to login
+                        Enter your email and password to login
                     </CardDescription>
                 </CardHeader>
+
                 <CardContent>
                     <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                        <form
+                            onSubmit={form.handleSubmit(onSubmit)}
+                            className="space-y-6"
+                        >
                             <FormField
                                 control={form.control}
                                 name="email"
+                                rules={{ required: "Email is required" }}
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Email</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="exam@example.com" type="email" {...field} />
+                                            <Input
+                                                type="email"
+                                                placeholder="example@email.com"
+                                                {...field}
+                                            />
                                         </FormControl>
                                         <FormDescription className="sr-only">
-                                            This is your email address
-                                        </FormDescription>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="password"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Password</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="********" type="password" {...field} />
-                                        </FormControl>
-                                        <FormDescription className="sr-only">
-                                            Password must be at least 6 characters
+                                            Your registered email
                                         </FormDescription>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
 
-                            <Button type="submit" className="w-full">Submit</Button>
+                            <FormField
+                                control={form.control}
+                                name="password"
+                                rules={{ required: "Password is required" }}
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Password</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                type="password"
+                                                placeholder="********"
+                                                {...field}
+                                            />
+                                        </FormControl>
+                                        <FormDescription className="sr-only">
+                                            Minimum 6 characters
+                                        </FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <Button type="submit" className="w-full" disabled={isLoading}>
+                                {isLoading ? "Logging in..." : "Login"}
+                            </Button>
                         </form>
-                        <h2 className="text-center mt-3">
-                            Don't have an account? <a href="/register" className="text-indigo-600">Register</a>
-                        </h2>
+
+                        <p className="text-center mt-3 text-sm">
+                            Don&apos;t have an account?{" "}
+                            <button
+                                onClick={() => navigate("/register")}
+                                className="text-indigo-600 hover:underline"
+                            >
+                                Register
+                            </button>
+                        </p>
                     </Form>
                 </CardContent>
             </Card>
-            <FieldDescription className="px-6 text-center">
-                By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
-                and <a href="#">Privacy Policy</a>.
+
+            <FieldDescription className="px-6 text-center text-xs">
+                By continuing, you agree to our{" "}
+                <a href="#" className="underline">
+                    Terms of Service
+                </a>{" "}
+                and{" "}
+                <a href="#" className="underline">
+                    Privacy Policy
+                </a>
+                .
             </FieldDescription>
         </div>
     );

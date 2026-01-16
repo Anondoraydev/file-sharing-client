@@ -10,6 +10,7 @@ const axiosBaseQuery =
       data?: AxiosRequestConfig["data"];
       params?: AxiosRequestConfig["params"];
       headers?: AxiosRequestConfig["headers"];
+      
     },
     unknown,
     unknown
