@@ -1,4 +1,3 @@
-
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,16 +13,18 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import {
     Form,
     FormControl,
-    FormDescription,
     FormField,
     FormItem,
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
+
 import { useLoginMutation } from "@/redux/features/auth/auth.api";
 import { toast } from "sonner";
 import { useNavigate } from "react-router";
+import { useDispatch } from "react-redux";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import { setCredentials } from "@/redux/features/auth.slice";
 
 type LoginFormValues = {
     email: string;
@@ -35,6 +36,7 @@ export function LoginForm({
     ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     const form = useForm<LoginFormValues>({
         defaultValues: {
@@ -47,30 +49,35 @@ export function LoginForm({
 
     const onSubmit: SubmitHandler<LoginFormValues> = async (data) => {
         try {
-            await login(data).unwrap();
+            // ✅ Login API call
+            const res = await login(data).unwrap();
+
+            // ✅ Set user + token in Redux
+            dispatch(
+                setCredentials({
+                    user: res.user,
+                    accessToken: res.accessToken,
+                })
+            );
+
             toast.success("Login successful");
             navigate("/", { replace: true });
         } catch (error) {
             const err = error as FetchBaseQueryError & {
-                data?: {
-                    message?: string;
-                    code?: string;
-                };
+                data?: { message?: string; code?: string };
             };
 
-            //  Account not verified
+            //  Account not verified → redirect to OTP verify page
             if (err.status === 401) {
                 toast.error("Your account is not verified. Please verify first.");
                 navigate("/verify", { state: data.email });
                 return;
             }
 
-            //  User not registered
+            //  User not registered → redirect to register
             if (err.status === 404 || err.data?.code === "USER_NOT_FOUND") {
                 toast.error("Account not found. Please register first.");
-                navigate("/register", {
-                    state: { email: data.email },
-                });
+                navigate("/register", { state: { email: data.email } });
                 return;
             }
 
@@ -91,10 +98,7 @@ export function LoginForm({
 
                 <CardContent>
                     <Form {...form}>
-                        <form
-                            onSubmit={form.handleSubmit(onSubmit)}
-                            className="space-y-6"
-                        >
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                             <FormField
                                 control={form.control}
                                 name="email"
@@ -109,9 +113,6 @@ export function LoginForm({
                                                 {...field}
                                             />
                                         </FormControl>
-                                        <FormDescription className="sr-only">
-                                            Your registered email
-                                        </FormDescription>
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -131,9 +132,6 @@ export function LoginForm({
                                                 {...field}
                                             />
                                         </FormControl>
-                                        <FormDescription className="sr-only">
-                                            Minimum 6 characters
-                                        </FormDescription>
                                         <FormMessage />
                                     </FormItem>
                                 )}
