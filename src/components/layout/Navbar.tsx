@@ -11,7 +11,8 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ModeToggle } from "./ModeToggler";
 import { Link } from "react-router";
-import { useUserInfoQuery } from "@/redux/features/auth/auth.api";
+import { authApi, useLogoutMutation, useUserInfoQuery } from "@/redux/features/auth/auth.api";
+import { useAppDispatch } from "@/redux/hook";
 
 const navigationLinks = [
   { href: "/", label: "Home" },
@@ -21,7 +22,17 @@ const navigationLinks = [
 export default function Navbar() {
 
   const { data } = useUserInfoQuery(undefined);
+  const [logout] = useLogoutMutation();
+  const dispatch = useAppDispatch();
+
   const email = data?.data?.email;
+
+  const handleLogout = () => {
+    logout(undefined);
+    dispatch(authApi.util.resetApiState());
+  };
+
+
 
   const [activeLink, setActiveLink] = useState("Home");
 
@@ -62,6 +73,7 @@ export default function Navbar() {
 
           {email ? (
             <Button
+              onClick={handleLogout}
               className="text-sm"
               size="sm"
               variant="destructive"
